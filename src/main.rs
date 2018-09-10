@@ -105,7 +105,7 @@ fn _exercise1_4() {
     }
 }
 
-fn exercise1_5() {
+fn _exercise1_5() {
     println!("Cryptopals: 1.5");
     println!("Implement repeating-key XOR");
 
@@ -127,6 +127,42 @@ fn exercise1_5() {
     println!();
 }
 
+fn differing_bits(first: u8, second: u8) -> u8 {
+    let mut count = 0;
+    for b in 0..8 {
+        // println!("{:?}", 1 << b);
+        let f = first & (1 << b);
+        let s = second & (1 << b);
+        if f != s {
+            count = count + 1;
+        }
+    }
+    // println!("{:?}", count);
+
+    count
+}
+
+fn hamming_distance(first: &str, second: &str) -> u8 {
+    let first_asc = AsciiStr::from_ascii(first).unwrap();
+    let second_asc = AsciiStr::from_ascii(second).unwrap();
+
+    // println!("first len: {:?}", first_asc.len());
+    // println!("first len: {:?}", second_asc.len());
+
+    let mut count = 0;
+    for c in 0..first_asc.len() {
+        count = count + differing_bits(first_asc[c] as u8, second_asc[c] as u8);
+    }
+    // println!("{:?} ", count);
+
+    count
+}
+
+fn exercise1_6() {
+    let dist = hamming_distance("this is a test", "wokka wokka!!!");
+    println!("{:?}", dist);
+}
+
 fn main() {
-    exercise1_5();
+    exercise1_6();
 }
