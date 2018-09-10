@@ -13,7 +13,7 @@ fn _exercise1_1() {
     println!("{:?}", b64);
 }
 
-fn exercise1_2() {
+fn _exercise1_2() {
     println!("Cryptopals: 1.2");
     println!("Fixed XOR");
 
@@ -32,6 +32,39 @@ fn exercise1_2() {
     println!();
 }
 
+fn exercise1_3() {
+    println!("Cryptopals: 1.3");
+    println!("Single-byte XOR cipher");
+
+    let hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
+    let dec = hex::decode(hex_str).unwrap();
+
+    for x in 65..122{
+        let mut found = true;
+        let mut chars = Vec::new();
+
+        for a in dec.iter() {
+            let tmp_dec = a ^ x;
+            if tmp_dec < 32 || tmp_dec > 126 {  // printable ascii characters
+                found = false;
+                break;
+            }
+
+            chars.push(tmp_dec);
+        }
+
+        if found {
+            let mut char_vec = Vec::new();
+            for c in chars {
+                char_vec.push(c as char);
+            }
+            let s: String = char_vec.into_iter().collect();
+
+            println!("{:?}", s);
+        }
+    }
+}
+
 fn main() {
-    exercise1_2();
+    exercise1_3();
 }
