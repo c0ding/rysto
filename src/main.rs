@@ -1,6 +1,12 @@
 extern crate hex;
 extern crate base64;
 
+use std::io;
+use std::io::BufReader;
+use std::io::BufRead;
+use std::fs::File;
+
+
 fn _exercise1_1() {
     println!("Cryptopals: 1.1");
     println!("Convert hex to base64");
@@ -32,14 +38,11 @@ fn _exercise1_2() {
     println!();
 }
 
-fn exercise1_3() {
-    println!("Cryptopals: 1.3");
-    println!("Single-byte XOR cipher");
+fn _single_byte_xor(line: &str) -> io::Result<()> {
+    let mut ret = false;
+    let dec = hex::decode(line).unwrap();
 
-    let hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    let dec = hex::decode(hex_str).unwrap();
-
-    for x in 65..122{
+    for x in 32..126{
         let mut found = true;
         let mut chars = Vec::new();
 
@@ -54,17 +57,52 @@ fn exercise1_3() {
         }
 
         if found {
+            ret = true;
+
             let mut char_vec = Vec::new();
             for c in chars {
+                // println!("{:?}", c as u8);
                 char_vec.push(c as char);
             }
+
             let s: String = char_vec.into_iter().collect();
 
             println!("{:?}", s);
         }
     }
+
+    if ret {
+        return Ok(());
+    } else {
+        return Err(std::io::Error::new(std::io::ErrorKind::Other, "No valid strings"));
+    }
+}
+
+fn _exercise1_3() {
+    println!("Cryptopals: 1.3");
+    println!("Single-byte XOR cipher");
+
+    let hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
+    let _ = _single_byte_xor(hex_str);
+}
+
+fn _exercise1_4() {
+    println!("Cryptopals: 1.4");
+    println!("Detect single-character XOR");
+
+    let f = File::open("4.txt").unwrap();
+    let file = BufReader::new(&f);
+    for (num, line) in file.lines().enumerate() {
+        let l = line.unwrap();
+        match _single_byte_xor(&l) {
+            Ok(_) => {
+                println!("<- {:?}", num);
+            }
+            Err(_) => ()
+        }
+    }
 }
 
 fn main() {
-    exercise1_3();
+    exercise1_4();
 }
