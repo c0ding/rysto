@@ -5,3 +5,5 @@ authors = ["Luis de Bethencourt <luisbg@amazon.com>"]
 edition = "2018"
 
 [dependencies]
+hex = "~0.3.2"
+base64 = "~0.6.0"
