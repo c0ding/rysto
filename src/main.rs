@@ -1,11 +1,13 @@
 extern crate hex;
 extern crate base64;
+extern crate ascii;
 
 use std::io;
 use std::io::BufReader;
 use std::io::BufRead;
 use std::fs::File;
 
+use ascii::AsciiStr;
 
 fn _exercise1_1() {
     println!("Cryptopals: 1.1");
@@ -103,6 +105,28 @@ fn _exercise1_4() {
     }
 }
 
+fn exercise1_5() {
+    println!("Cryptopals: 1.5");
+    println!("Implement repeating-key XOR");
+
+    let vanilla = AsciiStr::from_ascii("Burning 'em, if you ain't quick and nimble I go crazy when I hear a cymbal").unwrap();
+    let mut ice = Vec::new();
+    ice.push(73);   // I
+    ice.push(67);   // C
+    ice.push(69);   // E
+
+    let mut ic = 0;
+    let van_len = vanilla.len();
+    for vc in 0..van_len {
+        print!("{:x?}", (vanilla[vc] as u16) ^ ice[ic]);
+        ic = ic + 1;
+        if ic == 3 {
+            ic = 0;
+        }
+    }
+    println!();
+}
+
 fn main() {
-    exercise1_4();
+    exercise1_5();
 }
