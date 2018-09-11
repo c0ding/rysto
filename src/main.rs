@@ -4,8 +4,9 @@ extern crate ascii;
 
 use std::io;
 use std::io::BufReader;
-use std::io::BufRead;
 use std::fs::File;
+use std::io::Read;
+use std::io::BufRead;
 
 use ascii::AsciiStr;
 
@@ -142,7 +143,7 @@ fn differing_bits(first: u8, second: u8) -> u8 {
     count
 }
 
-fn hamming_distance(first: &str, second: &str) -> u8 {
+fn _hamming_distance(first: &str, second: &str) -> u8 {
     let first_asc = AsciiStr::from_ascii(first).unwrap();
     let second_asc = AsciiStr::from_ascii(second).unwrap();
 
@@ -158,9 +159,82 @@ fn hamming_distance(first: &str, second: &str) -> u8 {
     count
 }
 
+fn hamming_distance_vec(first: &Vec<u8>, second: &Vec<u8>) -> u64 {
+    let mut count: u64 = 0;
+
+    let mut len = first.len();
+    if len > second.len() {
+        len = second.len();
+    }
+
+    // TODO: Use len instead of 75
+    for c in 0..70 {
+        // println!("here {:?} {:?} {:?}", c, first.len(), second.len());
+        count = count + differing_bits(first[c], second[c]) as u64;
+    }
+    // println!("{:?} ", count);
+
+    count
+}
+
+fn lowest_key_size() -> u8 {
+    let mut count: u64;
+    let mut first: bool;
+    let mut first_vec = Vec::new();
+    let mut second_vec = Vec::new();
+    let mut lowest_ks: u8 = 0;
+    let mut lowest_dist_seen = 1000;
+
+    for ks in 2..40 {
+        let f = File::open("6.txt").unwrap();
+
+        // Read blocks based on keysize into vector A and B then calculate
+        // hamming distance
+        first_vec.clear();
+        second_vec.clear();
+
+        count = 0;
+        first = true;
+        for byte in f.bytes() {
+            // println!("{:?}", byte.unwrap());
+
+            if first {
+                first_vec.push(byte.unwrap());
+            } else {
+                second_vec.push(byte.unwrap());
+            }
+
+            count = count + 1;
+            if count == ks {
+                if !first {
+                    // println!("s {:?}", count);
+                    first = true;
+                } else {
+                    // println!("f {:?}", count);
+                    first = false;
+                }
+                count = 0;
+            }
+        }
+
+        let dist = hamming_distance_vec(&first_vec, &second_vec);
+        // let dist = 0;
+        if lowest_dist_seen > dist {
+            println!("{:?} {:?}", ks, dist);
+            lowest_dist_seen = dist;
+            lowest_ks = ks as u8;
+        }
+    }
+
+    // let dist = hamming_distance(l.slice());
+    // println!("{:?} {:?}", ks, dist);
+
+    lowest_ks
+}
+
 fn exercise1_6() {
-    let dist = hamming_distance("this is a test", "wokka wokka!!!");
-    println!("{:?}", dist);
+    let ks = lowest_key_size();
+    println!("key size: {:?}", ks);
 }
 
 fn main() {
