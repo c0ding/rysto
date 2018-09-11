@@ -81,7 +81,7 @@ fn _single_byte_xor(line: &str) -> io::Result<()> {
     }
 }
 
-fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
+fn _single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
     let mut got_ret = false;
     let mut ret: u8 = 0;
     let mut max_seen_letters = 0;
@@ -177,7 +177,7 @@ fn _exercise1_5() {
     println!();
 }
 
-fn differing_bits(first: u8, second: u8) -> u8 {
+fn _differing_bits(first: u8, second: u8) -> u8 {
     let mut count = 0;
     for b in 0..8 {
         // println!("{:?}", 1 << b);
@@ -201,14 +201,14 @@ fn _hamming_distance(first: &str, second: &str) -> u8 {
 
     let mut count = 0;
     for c in 0..first_asc.len() {
-        count = count + differing_bits(first_asc[c] as u8, second_asc[c] as u8);
+        count = count + _differing_bits(first_asc[c] as u8, second_asc[c] as u8);
     }
     // println!("{:?} ", count);
 
     count
 }
 
-fn hamming_distance_vec(first: &Vec<&u8>, second: &Vec<&u8>) -> u64 {
+fn _hamming_distance_vec(first: &Vec<&u8>, second: &Vec<&u8>) -> u64 {
     let mut count: u64 = 0;
 
     let mut len = first.len();
@@ -219,14 +219,14 @@ fn hamming_distance_vec(first: &Vec<&u8>, second: &Vec<&u8>) -> u64 {
     // TODO: Use len instead of 300
     for c in 0..300 {
         // println!("here {:?} {:?} {:?}", c, first.len(), second.len());
-        count = count + differing_bits(*first[c], *second[c]) as u64;
+        count = count + _differing_bits(*first[c], *second[c]) as u64;
     }
     // println!("{:?} ", count);
 
     count
 }
 
-fn lowest_key_size(content: &Vec<u8>) -> u8 {
+fn _lowest_key_size(content: &Vec<u8>) -> u8 {
     let mut count: u64;
     let mut first: bool;
     let mut first_vec = Vec::new();
@@ -264,7 +264,7 @@ fn lowest_key_size(content: &Vec<u8>) -> u8 {
             }
         }
 
-        let dist = hamming_distance_vec(&first_vec, &second_vec);
+        let dist = _hamming_distance_vec(&first_vec, &second_vec);
         // let dist = 0;
         if lowest_dist_seen > dist {
             // println!("{:?} {:?}", ks, dist);
@@ -279,7 +279,7 @@ fn lowest_key_size(content: &Vec<u8>) -> u8 {
     lowest_ks
 }
 
-fn decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
+fn _decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
     let mut decoded = Vec::new();
 
     let key_len = keyphrase.len();
@@ -299,7 +299,9 @@ fn decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
     println!("{}", d);
 }
 
-fn exercise1_6() {
+fn _exercise1_6() {
+    println!("Cryptopals: 1.6");
+    println!("Implement repeating-key XOR");
     let f = File::open("6.txt").unwrap();
     let file = BufReader::new(&f);
     let mut content = Vec::new();
@@ -310,7 +312,7 @@ fn exercise1_6() {
         }
     }
 
-    let ks = lowest_key_size(&content);
+    let ks = _lowest_key_size(&content);
     println!("key size: {:?}", ks);
 
     let mut keyphrase = Vec::new();
@@ -329,7 +331,7 @@ fn exercise1_6() {
                 count = 0;
             }
         }
-        match single_byte_xor_u8(block) {
+        match _single_byte_xor_u8(block) {
             Ok(k) => {
                 // println!("{:?} -> {:?}", i, k);
                 keyphrase.push(k as char);
@@ -342,9 +344,12 @@ fn exercise1_6() {
     let k: String = keyphrase.into_iter().collect();
     println!("Keyphrase: {:?}", k);
 
-    decrypt(content, keyphrase_u8);
+    _decrypt(content, keyphrase_u8);
+}
+
+fn exercise1_7() {
 }
 
 fn main() {
-    exercise1_6();
+    exercise1_7();
 }
