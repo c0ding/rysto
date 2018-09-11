@@ -1,6 +1,7 @@
 extern crate hex;
 extern crate base64;
 extern crate ascii;
+extern crate crypto;
 
 use std::io;
 use std::io::BufReader;
@@ -9,6 +10,9 @@ use std::fs::File;
 use std::io::BufRead;
 
 use ascii::AsciiStr;
+
+use crypto::aes;
+use crypto::buffer::{ WriteBuffer, BufferResult, ReadBuffer };
 
 fn _exercise1_1() {
     println!("Cryptopals: 1.1");
@@ -348,6 +352,42 @@ fn _exercise1_6() {
 }
 
 fn exercise1_7() {
+    let f = File::open("7.txt").unwrap();
+    let file = BufReader::new(&f);
+    let mut content = Vec::new();
+    for line in file.lines() {
+        let hex = base64::decode(&line.unwrap()).unwrap();
+        for i in hex {
+            content.push(i);
+        }
+    }
+    println!("Content has size: {}", content.len());
+
+    let key: &[u8] = b"YELLOW SUBMARINE";
+
+    let mut decryptor = aes::ecb_decryptor(aes::KeySize::KeySize128,
+                                           key,
+                                           crypto::blockmodes::PkcsPadding);
+
+    let mut final_result = Vec::new();
+    let mut buffer = [0; 2880];
+    let mut read_buffer = crypto::buffer::RefReadBuffer::new(&content);
+    let mut write_buffer = crypto::buffer::RefWriteBuffer::new(&mut buffer);
+
+    let result = decryptor.decrypt(&mut read_buffer, &mut write_buffer, true).unwrap();
+    match result {
+        BufferResult::BufferUnderflow => {
+            for c in write_buffer.take_read_buffer().take_remaining() {
+                final_result.push(*c as char);
+            }
+        },
+        BufferResult::BufferOverflow => {
+            println!("Buffer not big enough");
+        }
+    }
+
+    let fr: String = final_result.into_iter().collect();
+    println!("{}", fr);
 }
 
 fn main() {
