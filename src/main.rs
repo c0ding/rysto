@@ -5,7 +5,7 @@ extern crate ascii;
 use std::io;
 use std::io::BufReader;
 use std::fs::File;
-use std::io::Read;
+// use std::io::Read;
 use std::io::BufRead;
 
 use ascii::AsciiStr;
@@ -84,18 +84,13 @@ fn _single_byte_xor(line: &str) -> io::Result<()> {
 fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
     let mut got_ret = false;
     let mut ret: u8 = 0;
-
-    for a in block.iter() {
-        // println!("block.iter: {:?}", a);
-    }
+    let mut max_seen_letters = 0;
 
     for x in 30..160{
         let mut found = true;
         let mut chars = Vec::new();
 
         for a in block.iter() {
-            // println!("block.iter: {:?}", a);
-
             let tmp_dec = *a ^ x;
             if tmp_dec < 10 || tmp_dec > 126 || (tmp_dec > 14 && tmp_dec < 32) {  // printable ascii characters
                 found = false;
@@ -108,22 +103,28 @@ fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
 
         if found {
             got_ret = true;
-            ret = x;
 
             let mut char_vec = Vec::new();
+            let mut seen_letters = 0;
             for c in chars {
-                // println!("{:?}", c as u8);
+                if (c > 97 && c < 122) || c == 32 || c == 46 || c == 44  {
+                     seen_letters = seen_letters + 1;
+                }
+
                 char_vec.push(c as char);
             }
 
-            let s: String = char_vec.into_iter().collect();
+            // let s: String = char_vec.into_iter().collect();
 
-            println!("{:?}:  {:?}", x, s);
+            if seen_letters > max_seen_letters {
+                ret = x;
+                max_seen_letters = seen_letters;
+            }
         }
     }
 
     if got_ret {
-        return Ok((ret));
+        return Ok(ret);
     } else {
         return Err(std::io::Error::new(std::io::ErrorKind::Other, "No valid strings"));
     }
@@ -233,8 +234,6 @@ fn lowest_key_size(content: &Vec<u8>) -> u8 {
     let mut lowest_ks: u8 = 0;
     let mut lowest_dist_seen = 1000;
 
-
-
     for ks in 2..50 {
         // Read blocks based on keysize into vector A and B then calculate
         // hamming distance
@@ -268,7 +267,7 @@ fn lowest_key_size(content: &Vec<u8>) -> u8 {
         let dist = hamming_distance_vec(&first_vec, &second_vec);
         // let dist = 0;
         if lowest_dist_seen > dist {
-            println!("{:?} {:?}", ks, dist);
+            // println!("{:?} {:?}", ks, dist);
             lowest_dist_seen = dist;
             lowest_ks = ks as u8;
         }
@@ -284,13 +283,8 @@ fn exercise1_6() {
     let f = File::open("6.txt").unwrap();
     let file = BufReader::new(&f);
     let mut content = Vec::new();
-    for (n, line) in file.lines().enumerate() {
+    for line in file.lines() {
         let hex = base64::decode(&line.unwrap()).unwrap();
-
-        if n < 3 {
-            println!("{:?}", hex);
-        }
-
         for i in hex {
             content.push(i);
         }
@@ -299,12 +293,13 @@ fn exercise1_6() {
     let ks = lowest_key_size(&content);
     println!("key size: {:?}", ks);
 
+    let mut keyphrase = Vec::new();
+
     for i in 0..ks {
         let mut count = 0;
         let mut block = Vec::new();
         for b in 0..(content.len() - ks as usize) {
             if count == 0 {
-                // print!("{:?} ", byte)
                 block.push(content[b + i as usize]);
             }
 
@@ -315,13 +310,15 @@ fn exercise1_6() {
         }
         match single_byte_xor_u8(block) {
             Ok(k) => {
-                println!("{:?} -> {:?}", i, k);
+                // println!("{:?} -> {:?}", i, k);
+                keyphrase.push(k as char);
             },
             Err(_) => {}
         }
     }
 
-    // First 5 characters of key are: "Term"
+    let k: String = keyphrase.into_iter().collect();
+    println!("Keyphrase: {:?}", k);
 }
 
 fn main() {
