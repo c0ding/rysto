@@ -351,7 +351,10 @@ fn _exercise1_6() {
     _decrypt(content, keyphrase_u8);
 }
 
-fn exercise1_7() {
+fn _exercise1_7() {
+    println!("Cryptopals: 1.7");
+    println!("AES in ECB mode");
+
     let f = File::open("7.txt").unwrap();
     let file = BufReader::new(&f);
     let mut content = Vec::new();
@@ -390,6 +393,56 @@ fn exercise1_7() {
     println!("{}", fr);
 }
 
+fn exercise1_8() {
+    println!("Cryptopals: 1.8");
+    println!("Detect AES in ECB mode");
+
+    let f = File::open("8.txt").unwrap();
+    let file = BufReader::new(&f);
+    let mut content = Vec::new();
+    let mut repeat: u32;
+    let mut max_seen_repeat = 0;
+    for (lnum, line) in file.lines().enumerate() {
+        repeat = 0;
+        let hex = base64::decode(&line.unwrap()).unwrap();
+        for i in hex {
+            content.push(i);
+        }
+
+        let mut block = Vec::new();
+        for b in (0..(content.len() - 16)).step_by(16) {
+            for i in 0..16 {
+                block.push(content[b + i]);
+            }
+            // println!("{:?}", block);
+
+            for c in ((b+16)..(content.len() - 16)).step_by(16) {
+                for tmp in 0..17 {
+                    if tmp == 16 {
+                        // println!("{:x?}", block);
+                        // println!("{:?}", base64::encode(&block));
+                        repeat = repeat + 1;
+                        break;
+                    }
+
+                    if block[tmp] != content[c + tmp] {
+                        break;
+                    }
+                }
+            }
+
+            block.clear();
+        }
+
+        if repeat > max_seen_repeat {
+            max_seen_repeat = repeat;
+            println!("ECB line num: {}", lnum);
+        }
+
+        content.clear();
+    }
+}
+
 fn main() {
-    exercise1_7();
+    exercise1_8();
 }
