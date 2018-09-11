@@ -81,6 +81,54 @@ fn _single_byte_xor(line: &str) -> io::Result<()> {
     }
 }
 
+fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
+    let mut got_ret = false;
+    let mut ret: u8 = 0;
+
+    for a in block.iter() {
+        // println!("block.iter: {:?}", a);
+    }
+
+    for x in 30..160{
+        let mut found = true;
+        let mut chars = Vec::new();
+
+        for a in block.iter() {
+            // println!("block.iter: {:?}", a);
+
+            let tmp_dec = *a ^ x;
+            if tmp_dec < 10 || tmp_dec > 126 || (tmp_dec > 14 && tmp_dec < 32) {  // printable ascii characters
+                found = false;
+                // println!("Got a wrong thing: {:?}", tmp_dec);
+                break;
+            }
+
+            chars.push(tmp_dec);
+        }
+
+        if found {
+            got_ret = true;
+            ret = x;
+
+            let mut char_vec = Vec::new();
+            for c in chars {
+                // println!("{:?}", c as u8);
+                char_vec.push(c as char);
+            }
+
+            let s: String = char_vec.into_iter().collect();
+
+            println!("{:?}:  {:?}", x, s);
+        }
+    }
+
+    if got_ret {
+        return Ok((ret));
+    } else {
+        return Err(std::io::Error::new(std::io::ErrorKind::Other, "No valid strings"));
+    }
+}
+
 fn _exercise1_3() {
     println!("Cryptopals: 1.3");
     println!("Single-byte XOR cipher");
@@ -159,7 +207,7 @@ fn _hamming_distance(first: &str, second: &str) -> u8 {
     count
 }
 
-fn hamming_distance_vec(first: &Vec<u8>, second: &Vec<u8>) -> u64 {
+fn hamming_distance_vec(first: &Vec<&u8>, second: &Vec<&u8>) -> u64 {
     let mut count: u64 = 0;
 
     let mut len = first.len();
@@ -167,17 +215,17 @@ fn hamming_distance_vec(first: &Vec<u8>, second: &Vec<u8>) -> u64 {
         len = second.len();
     }
 
-    // TODO: Use len instead of 75
-    for c in 0..70 {
+    // TODO: Use len instead of 300
+    for c in 0..300 {
         // println!("here {:?} {:?} {:?}", c, first.len(), second.len());
-        count = count + differing_bits(first[c], second[c]) as u64;
+        count = count + differing_bits(*first[c], *second[c]) as u64;
     }
     // println!("{:?} ", count);
 
     count
 }
 
-fn lowest_key_size() -> u8 {
+fn lowest_key_size(content: &Vec<u8>) -> u8 {
     let mut count: u64;
     let mut first: bool;
     let mut first_vec = Vec::new();
@@ -185,9 +233,9 @@ fn lowest_key_size() -> u8 {
     let mut lowest_ks: u8 = 0;
     let mut lowest_dist_seen = 1000;
 
-    for ks in 2..40 {
-        let f = File::open("6.txt").unwrap();
 
+
+    for ks in 2..50 {
         // Read blocks based on keysize into vector A and B then calculate
         // hamming distance
         first_vec.clear();
@@ -195,13 +243,13 @@ fn lowest_key_size() -> u8 {
 
         count = 0;
         first = true;
-        for byte in f.bytes() {
+        for i in content {
             // println!("{:?}", byte.unwrap());
 
             if first {
-                first_vec.push(byte.unwrap());
+                first_vec.push(i);
             } else {
-                second_vec.push(byte.unwrap());
+                second_vec.push(i);
             }
 
             count = count + 1;
@@ -233,8 +281,47 @@ fn lowest_key_size() -> u8 {
 }
 
 fn exercise1_6() {
-    let ks = lowest_key_size();
+    let f = File::open("6.txt").unwrap();
+    let file = BufReader::new(&f);
+    let mut content = Vec::new();
+    for (n, line) in file.lines().enumerate() {
+        let hex = base64::decode(&line.unwrap()).unwrap();
+
+        if n < 3 {
+            println!("{:?}", hex);
+        }
+
+        for i in hex {
+            content.push(i);
+        }
+    }
+
+    let ks = lowest_key_size(&content);
     println!("key size: {:?}", ks);
+
+    for i in 0..ks {
+        let mut count = 0;
+        let mut block = Vec::new();
+        for b in 0..(content.len() - ks as usize) {
+            if count == 0 {
+                // print!("{:?} ", byte)
+                block.push(content[b + i as usize]);
+            }
+
+            count = count + 1;
+            if count == 29 {
+                count = 0;
+            }
+        }
+        match single_byte_xor_u8(block) {
+            Ok(k) => {
+                println!("{:?} -> {:?}", i, k);
+            },
+            Err(_) => {}
+        }
+    }
+
+    // First 5 characters of key are: "Term"
 }
 
 fn main() {
