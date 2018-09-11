@@ -279,6 +279,26 @@ fn lowest_key_size(content: &Vec<u8>) -> u8 {
     lowest_ks
 }
 
+fn decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
+    let mut decoded = Vec::new();
+
+    let key_len = keyphrase.len();
+    let mut k = 0;
+    for c in content {
+        // print!("{:?}", (c ^ keyphrase[k]) as char);
+        decoded.push((c ^ keyphrase[k]) as char);
+
+        k = k + 1;
+        if k == key_len {
+            k = 0;
+        }
+    }
+
+    let d: String = decoded.into_iter().collect();
+    println!("Decoded content:");
+    println!("{}", d);
+}
+
 fn exercise1_6() {
     let f = File::open("6.txt").unwrap();
     let file = BufReader::new(&f);
@@ -294,6 +314,7 @@ fn exercise1_6() {
     println!("key size: {:?}", ks);
 
     let mut keyphrase = Vec::new();
+    let mut keyphrase_u8 = Vec::new();
 
     for i in 0..ks {
         let mut count = 0;
@@ -312,6 +333,7 @@ fn exercise1_6() {
             Ok(k) => {
                 // println!("{:?} -> {:?}", i, k);
                 keyphrase.push(k as char);
+                keyphrase_u8.push(k);
             },
             Err(_) => {}
         }
@@ -319,6 +341,8 @@ fn exercise1_6() {
 
     let k: String = keyphrase.into_iter().collect();
     println!("Keyphrase: {:?}", k);
+
+    decrypt(content, keyphrase_u8);
 }
 
 fn main() {
