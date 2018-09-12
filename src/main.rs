@@ -3,6 +3,8 @@ extern crate base64;
 extern crate ascii;
 extern crate crypto;
 
+use std::env;
+
 use std::io;
 use std::io::BufReader;
 use std::fs::File;
@@ -14,7 +16,7 @@ use ascii::AsciiStr;
 use crypto::aes;
 use crypto::buffer::{ WriteBuffer, BufferResult, ReadBuffer };
 
-fn _exercise1_1() {
+fn exercise1_1() {
     println!("Cryptopals: 1.1");
     println!("Convert hex to base64");
 
@@ -26,7 +28,7 @@ fn _exercise1_1() {
     println!("{:?}", b64);
 }
 
-fn _exercise1_2() {
+fn exercise1_2() {
     println!("Cryptopals: 1.2");
     println!("Fixed XOR");
 
@@ -45,7 +47,7 @@ fn _exercise1_2() {
     println!();
 }
 
-fn _single_byte_xor(line: &str) -> io::Result<()> {
+fn single_byte_xor(line: &str) -> io::Result<()> {
     let mut ret = false;
     let dec = hex::decode(line).unwrap();
 
@@ -85,7 +87,7 @@ fn _single_byte_xor(line: &str) -> io::Result<()> {
     }
 }
 
-fn _single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
+fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
     let mut got_ret = false;
     let mut ret: u8 = 0;
     let mut max_seen_letters = 0;
@@ -134,15 +136,15 @@ fn _single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
     }
 }
 
-fn _exercise1_3() {
+fn exercise1_3() {
     println!("Cryptopals: 1.3");
     println!("Single-byte XOR cipher");
 
     let hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    let _ = _single_byte_xor(hex_str);
+    let _ = single_byte_xor(hex_str);
 }
 
-fn _exercise1_4() {
+fn exercise1_4() {
     println!("Cryptopals: 1.4");
     println!("Detect single-character XOR");
 
@@ -150,7 +152,7 @@ fn _exercise1_4() {
     let file = BufReader::new(&f);
     for (num, line) in file.lines().enumerate() {
         let l = line.unwrap();
-        match _single_byte_xor(&l) {
+        match single_byte_xor(&l) {
             Ok(_) => {
                 println!("<- {:?}", num);
             }
@@ -159,7 +161,7 @@ fn _exercise1_4() {
     }
 }
 
-fn _exercise1_5() {
+fn exercise1_5() {
     println!("Cryptopals: 1.5");
     println!("Implement repeating-key XOR");
 
@@ -181,7 +183,7 @@ fn _exercise1_5() {
     println!();
 }
 
-fn _differing_bits(first: u8, second: u8) -> u8 {
+fn differing_bits(first: u8, second: u8) -> u8 {
     let mut count = 0;
     for b in 0..8 {
         // println!("{:?}", 1 << b);
@@ -205,32 +207,32 @@ fn _hamming_distance(first: &str, second: &str) -> u8 {
 
     let mut count = 0;
     for c in 0..first_asc.len() {
-        count = count + _differing_bits(first_asc[c] as u8, second_asc[c] as u8);
+        count = count + differing_bits(first_asc[c] as u8, second_asc[c] as u8);
     }
     // println!("{:?} ", count);
 
     count
 }
 
-fn _hamming_distance_vec(first: &Vec<&u8>, second: &Vec<&u8>) -> u64 {
+fn hamming_distance_vec(first: &Vec<&u8>, second: &Vec<&u8>) -> u64 {
     let mut count: u64 = 0;
 
-    let mut len = first.len();
-    if len > second.len() {
-        len = second.len();
-    }
+    // let mut len = first.len();
+    // if len > second.len() {
+    //     len = second.len();
+    // }
 
     // TODO: Use len instead of 300
     for c in 0..300 {
         // println!("here {:?} {:?} {:?}", c, first.len(), second.len());
-        count = count + _differing_bits(*first[c], *second[c]) as u64;
+        count = count + differing_bits(*first[c], *second[c]) as u64;
     }
     // println!("{:?} ", count);
 
     count
 }
 
-fn _lowest_key_size(content: &Vec<u8>) -> u8 {
+fn lowest_key_size(content: &Vec<u8>) -> u8 {
     let mut count: u64;
     let mut first: bool;
     let mut first_vec = Vec::new();
@@ -268,7 +270,7 @@ fn _lowest_key_size(content: &Vec<u8>) -> u8 {
             }
         }
 
-        let dist = _hamming_distance_vec(&first_vec, &second_vec);
+        let dist = hamming_distance_vec(&first_vec, &second_vec);
         // let dist = 0;
         if lowest_dist_seen > dist {
             // println!("{:?} {:?}", ks, dist);
@@ -283,7 +285,7 @@ fn _lowest_key_size(content: &Vec<u8>) -> u8 {
     lowest_ks
 }
 
-fn _decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
+fn decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
     let mut decoded = Vec::new();
 
     let key_len = keyphrase.len();
@@ -303,7 +305,7 @@ fn _decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
     println!("{}", d);
 }
 
-fn _exercise1_6() {
+fn exercise1_6() {
     println!("Cryptopals: 1.6");
     println!("Implement repeating-key XOR");
     let f = File::open("6.txt").unwrap();
@@ -316,7 +318,7 @@ fn _exercise1_6() {
         }
     }
 
-    let ks = _lowest_key_size(&content);
+    let ks = lowest_key_size(&content);
     println!("key size: {:?}", ks);
 
     let mut keyphrase = Vec::new();
@@ -335,7 +337,7 @@ fn _exercise1_6() {
                 count = 0;
             }
         }
-        match _single_byte_xor_u8(block) {
+        match single_byte_xor_u8(block) {
             Ok(k) => {
                 // println!("{:?} -> {:?}", i, k);
                 keyphrase.push(k as char);
@@ -348,10 +350,10 @@ fn _exercise1_6() {
     let k: String = keyphrase.into_iter().collect();
     println!("Keyphrase: {:?}", k);
 
-    _decrypt(content, keyphrase_u8);
+    decrypt(content, keyphrase_u8);
 }
 
-fn _exercise1_7() {
+fn exercise1_7() {
     println!("Cryptopals: 1.7");
     println!("AES in ECB mode");
 
@@ -444,5 +446,40 @@ fn exercise1_8() {
 }
 
 fn main() {
-    exercise1_8();
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() < 2 {
+        println!("Error: You need to pass an exercise number as the first argument");
+        return;
+    }
+
+    match args[1].as_ref() {
+        "1" => {
+            exercise1_1();
+        }
+        "2" => {
+            exercise1_2();
+        }
+        "3" => {
+            exercise1_3();
+        }
+        "4" => {
+            exercise1_4();
+        }
+        "5" => {
+            exercise1_5();
+        }
+        "6" => {
+            exercise1_6();
+        }
+        "7" => {
+            exercise1_7();
+        }
+        "8" => {
+            exercise1_8();
+        }
+        _ => {
+            println!("Error: Invalid exercise number");
+        }
+    }
 }
