@@ -1,42 +1,37 @@
 mod set1;
+mod set2;
 
 use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() < 2 {
-        println!("Error: You need to pass an exercise number as the first argument");
+    if args.len() < 3 {
+        println!("Error: You need to pass a set and exercise number as arguments");
+        println!("Example: rysto 2 1");
         return;
     }
 
+    let mut ex_num: usize = 0;
+    match args[2].parse() {
+        Ok(num) => {
+            ex_num = num;
+        },
+        Err(_) => {
+            println!("Error: second argument needs to be a number");
+        }
+    }
+
+
     match args[1].as_ref() {
         "1" => {
-            set1::exercise_1();
+            set1::run(ex_num);
         }
         "2" => {
-            set1::exercise_2();
-        }
-        "3" => {
-            set1::exercise_3();
-        }
-        "4" => {
-            set1::exercise_4();
-        }
-        "5" => {
-            set1::exercise_5();
-        }
-        "6" => {
-            set1::exercise_6();
-        }
-        "7" => {
-            set1::exercise_7();
-        }
-        "8" => {
-            set1::exercise_8();
+            set2::run(ex_num);
         }
         _ => {
-            println!("Error: Invalid exercise number");
+            println!("Error: first argument isn't a valid set");
         }
     }
 }

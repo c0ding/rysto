@@ -15,7 +15,7 @@ use crypto::aes;
 use crypto::buffer::{ WriteBuffer, BufferResult, ReadBuffer };
 
 
-pub fn exercise_1() {
+fn exercise_1() {
     println!("Cryptopals: 1.1");
     println!("Convert hex to base64");
 
@@ -27,7 +27,7 @@ pub fn exercise_1() {
     println!("{:?}", b64);
 }
 
-pub fn exercise_2() {
+fn exercise_2() {
     println!("Cryptopals: 1.2");
     println!("Fixed XOR");
 
@@ -135,7 +135,7 @@ fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
     }
 }
 
-pub fn exercise_3() {
+fn exercise_3() {
     println!("Cryptopals: 1.3");
     println!("Single-byte XOR cipher");
 
@@ -143,7 +143,7 @@ pub fn exercise_3() {
     let _ = single_byte_xor(hex_str);
 }
 
-pub fn exercise_4() {
+fn exercise_4() {
     println!("Cryptopals: 1.4");
     println!("Detect single-character XOR");
 
@@ -160,7 +160,7 @@ pub fn exercise_4() {
     }
 }
 
-pub fn exercise_5() {
+fn exercise_5() {
     println!("Cryptopals: 1.5");
     println!("Implement repeating-key XOR");
 
@@ -304,7 +304,7 @@ fn decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
     println!("{}", d);
 }
 
-pub fn exercise_6() {
+fn exercise_6() {
     println!("Cryptopals: 1.6");
     println!("Implement repeating-key XOR");
     let f = File::open("6.txt").unwrap();
@@ -352,7 +352,7 @@ pub fn exercise_6() {
     decrypt(content, keyphrase_u8);
 }
 
-pub fn exercise_7() {
+fn exercise_7() {
     println!("Cryptopals: 1.7");
     println!("AES in ECB mode");
 
@@ -394,7 +394,7 @@ pub fn exercise_7() {
     println!("{}", fr);
 }
 
-pub fn exercise_8() {
+fn exercise_8() {
     println!("Cryptopals: 1.8");
     println!("Detect AES in ECB mode");
 
@@ -442,4 +442,24 @@ pub fn exercise_8() {
 
         content.clear();
     }
+}
+
+pub fn run(exercise_num: usize) {
+    let mut exercises: Vec<&Fn()> = Vec::new();
+
+    exercises.push(&exercise_1);
+    exercises.push(&exercise_2);
+    exercises.push(&exercise_3);
+    exercises.push(&exercise_4);
+    exercises.push(&exercise_5);
+    exercises.push(&exercise_6);
+    exercises.push(&exercise_7);
+    exercises.push(&exercise_8);
+
+    if exercise_num > exercises.len() || exercise_num <= 0 {
+        println!("Error: exercise number doesn't exist");
+        return;
+    }
+
+    exercises[exercise_num - 1]();
 }
