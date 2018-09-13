@@ -284,7 +284,7 @@ fn lowest_key_size(content: &Vec<u8>) -> u8 {
     lowest_ks
 }
 
-fn decrypt(content: Vec<u8>, keyphrase: Vec<u8>) {
+fn decrypt_ecb(content: Vec<u8>, keyphrase: Vec<u8>) {
     let mut decoded = Vec::new();
 
     let key_len = keyphrase.len();
@@ -349,7 +349,7 @@ fn exercise_6() {
     let k: String = keyphrase.into_iter().collect();
     println!("Keyphrase: {:?}", k);
 
-    decrypt(content, keyphrase_u8);
+    decrypt_ecb(content, keyphrase_u8);
 }
 
 fn exercise_7() {
