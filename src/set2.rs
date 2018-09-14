@@ -1,5 +1,7 @@
 use ascii::AsciiStr;
 
+use super::util;
+
 fn add_padding(content: String, block_len: usize) -> String {
     let mut out = content.clone();
 
@@ -23,69 +25,6 @@ fn exercise_1() {
     let content = String::from("YELLOW SUBMARINE");
     println!("Original content is: {}", content);
     println!("Padded output is: {}", add_padding(content, 20));
-}
-
-fn encrypt_cbc(plain_text: Vec<u8>, key: &[u8; 16], iv: &[u8; 16]) -> Vec<u8> {
-    let mut out: Vec<u8> = Vec::new();
-    let mut curr_block = Vec::new();
-    let mut prev_block = Vec::new();
-
-    for i in iv {
-        prev_block.push(*i);
-    }
-
-    let key_len = key.len();
-    let mut k: usize = 0;
-
-    for t in plain_text {
-        let a: u8 = t ^ prev_block[k];
-        let b: u8 = a ^ key[k];
-        out.push(b);
-
-        curr_block.push(b);
-
-        // First uses IV
-        if k < (key_len - 1) {
-            k = k + 1;
-        } else {
-            k = 0;
-            prev_block = curr_block.clone();
-            curr_block.clear();
-        }
-    }
-
-    out
-}
-
-fn decrypt_cbc(cypher: Vec<u8>, key: &[u8; 16], iv: &[u8; 16]) -> Vec<u8> {
-    let mut out: Vec<u8> = Vec::new();
-    let mut curr_block = Vec::new();
-    let mut prev_block = Vec::new();
-
-    for i in iv {
-        prev_block.push(*i);
-    }
-
-    let key_len = key.len();
-    let mut k: usize = 0;
-
-    for c in cypher {
-        let a: u8 = c ^ key[k];
-        let b: u8 = a ^ prev_block[k];
-        out.push(b);
-        curr_block.push(c);
-
-        // First uses IV
-        if k < (key_len - 1) {
-            k = k + 1;
-        } else {
-            k = 0;
-            prev_block = curr_block.clone();
-            curr_block.clear();
-        }
-    }
-
-    out
 }
 
 fn exercise_2() {
@@ -114,13 +53,13 @@ fn exercise_2() {
     }
 
     println!("\n\nEncrypt");
-    let cypher = encrypt_cbc(content, key, iv);
+    let cypher = util::encrypt_cbc(content, key, iv);
     for c in &cypher {
         print!("{:x?} ", *c);
     }
 
     println!("\n\nDecrypt");
-    let recovered = decrypt_cbc(cypher, key, iv);
+    let recovered = util::decrypt_cbc(cypher, key, iv);
     for r in recovered {
         print!("{:x?} ", r);
     }

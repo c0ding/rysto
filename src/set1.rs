@@ -3,7 +3,6 @@ extern crate base64;
 extern crate ascii;
 extern crate crypto;
 
-use std::io;
 use std::io::BufReader;
 use std::fs::File;
 // use std::io::Read;
@@ -14,6 +13,7 @@ use ascii::AsciiStr;
 use crypto::aes;
 use crypto::buffer::{ WriteBuffer, BufferResult, ReadBuffer };
 
+use super::util;
 
 fn exercise_1() {
     println!("Cryptopals: 1.1");
@@ -46,101 +46,12 @@ fn exercise_2() {
     println!();
 }
 
-fn single_byte_xor(line: &str) -> io::Result<()> {
-    let mut ret = false;
-    let dec = hex::decode(line).unwrap();
-
-    for x in 32..126{
-        let mut found = true;
-        let mut chars = Vec::new();
-
-        for a in dec.iter() {
-            let tmp_dec = a ^ x;
-            if tmp_dec < 32 || tmp_dec > 126 {  // printable ascii characters
-                found = false;
-                break;
-            }
-
-            chars.push(tmp_dec);
-        }
-
-        if found {
-            ret = true;
-
-            let mut char_vec = Vec::new();
-            for c in chars {
-                // println!("{:?}", c as u8);
-                char_vec.push(c as char);
-            }
-
-            let s: String = char_vec.into_iter().collect();
-
-            println!("{:?}", s);
-        }
-    }
-
-    if ret {
-        return Ok(());
-    } else {
-        return Err(std::io::Error::new(std::io::ErrorKind::Other, "No valid strings"));
-    }
-}
-
-fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
-    let mut got_ret = false;
-    let mut ret: u8 = 0;
-    let mut max_seen_letters = 0;
-
-    for x in 30..160{
-        let mut found = true;
-        let mut chars = Vec::new();
-
-        for a in block.iter() {
-            let tmp_dec = *a ^ x;
-            if tmp_dec < 10 || tmp_dec > 126 || (tmp_dec > 14 && tmp_dec < 32) {  // printable ascii characters
-                found = false;
-                // println!("Got a wrong thing: {:?}", tmp_dec);
-                break;
-            }
-
-            chars.push(tmp_dec);
-        }
-
-        if found {
-            got_ret = true;
-
-            let mut char_vec = Vec::new();
-            let mut seen_letters = 0;
-            for c in chars {
-                if (c > 97 && c < 122) || c == 32 || c == 46 || c == 44  {
-                     seen_letters = seen_letters + 1;
-                }
-
-                char_vec.push(c as char);
-            }
-
-            // let s: String = char_vec.into_iter().collect();
-
-            if seen_letters > max_seen_letters {
-                ret = x;
-                max_seen_letters = seen_letters;
-            }
-        }
-    }
-
-    if got_ret {
-        return Ok(ret);
-    } else {
-        return Err(std::io::Error::new(std::io::ErrorKind::Other, "No valid strings"));
-    }
-}
-
 fn exercise_3() {
     println!("Cryptopals: 1.3");
     println!("Single-byte XOR cipher");
 
     let hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    let _ = single_byte_xor(hex_str);
+    let _ = util::single_byte_xor(hex_str);
 }
 
 fn exercise_4() {
@@ -151,7 +62,7 @@ fn exercise_4() {
     let file = BufReader::new(&f);
     for (num, line) in file.lines().enumerate() {
         let l = line.unwrap();
-        match single_byte_xor(&l) {
+        match util::single_byte_xor(&l) {
             Ok(_) => {
                 println!("<- {:?}", num);
             }
@@ -284,26 +195,6 @@ fn lowest_key_size(content: &Vec<u8>) -> u8 {
     lowest_ks
 }
 
-fn decrypt_ecb(content: Vec<u8>, keyphrase: Vec<u8>) {
-    let mut decoded = Vec::new();
-
-    let key_len = keyphrase.len();
-    let mut k = 0;
-    for c in content {
-        // print!("{:?}", (c ^ keyphrase[k]) as char);
-        decoded.push((c ^ keyphrase[k]) as char);
-
-        k = k + 1;
-        if k == key_len {
-            k = 0;
-        }
-    }
-
-    let d: String = decoded.into_iter().collect();
-    println!("Decoded content:");
-    println!("{}", d);
-}
-
 fn exercise_6() {
     println!("Cryptopals: 1.6");
     println!("Implement repeating-key XOR");
@@ -336,7 +227,7 @@ fn exercise_6() {
                 count = 0;
             }
         }
-        match single_byte_xor_u8(block) {
+        match util::single_byte_xor_u8(block) {
             Ok(k) => {
                 // println!("{:?} -> {:?}", i, k);
                 keyphrase.push(k as char);
@@ -349,7 +240,7 @@ fn exercise_6() {
     let k: String = keyphrase.into_iter().collect();
     println!("Keyphrase: {:?}", k);
 
-    decrypt_ecb(content, keyphrase_u8);
+    util::decrypt_ecb(content, keyphrase_u8);
 }
 
 fn exercise_7() {
