@@ -89,7 +89,7 @@ pub fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
     }
 }
 
-pub fn _encrypt_ecb(content: Vec<u8>, keyphrase: Vec<u8>) -> Vec<u8> {
+pub fn encrypt_ecb(content: Vec<u8>, keyphrase: Vec<u8>) -> Vec<u8> {
     let mut encoded = Vec::new();
 
     let key_len = keyphrase.len();
