@@ -1,3 +1,5 @@
+extern crate base64;
+
 use ascii::AsciiStr;
 use rand::prelude::*;
 
@@ -122,12 +124,70 @@ fn exercise_3() {
     }
 }
 
+fn exercise_4() {
+    println!("Cryptopals: 2.4");
+    println!("Byte-at-a-time ECB decryption");
+
+    let mut rng = thread_rng();
+    let mut key: [u8; 16] = [0; 16];
+    for i in 0..key.len() {
+        key[i] = rng.gen_range(0,255);
+    }
+
+    // let plain_text: &[u8; 32] = b"This is plaintext for the oracle";
+
+    let epilogue = String::from("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg
+aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq
+dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg
+YnkK");
+
+    let mut cypher = Vec::new();
+    for line in epilogue.lines() {
+        let hex = base64::decode(&line).unwrap();
+        for i in hex {
+            cypher.push(i);
+        }
+    }
+
+    // TODO: discover block size and detect it is using ECB
+    let known: &[u8; 15] = b"AAAAAAAAAAAAAAA"; // size 1 less than key
+
+    let mut dict = Vec::new();
+    for asc in 32..126 {
+        let mut try_ = Vec::new();
+        for k in known {
+            try_.push(*k);
+        }
+        try_.push(asc);
+
+        let tmp_cyph = util::encrypt_ecb(try_, key.to_vec());
+        dict.push((asc, tmp_cyph[tmp_cyph.len() - 1]));
+    }
+
+    let mut joint: Vec<u8> = Vec::new();
+    for c in known {
+        joint.push(*c);
+    }
+    for c in &cypher {
+        joint.push(*c);
+    }
+
+    let test = util::encrypt_ecb(joint, key.to_vec());
+
+    for (asc, found_enc) in dict {
+        if test[key.len() - 1] == found_enc {
+            println!("\n{}", asc as char);
+        }
+    }
+}
+
 pub fn run(exercise_num: usize) {
     let mut exercises: Vec<&Fn()> = Vec::new();
 
     exercises.push(&exercise_1);
     exercises.push(&exercise_2);
     exercises.push(&exercise_3);
+    exercises.push(&exercise_4);
 
     if exercise_num > exercises.len() || exercise_num <= 0 {
         println!("Error: exercise number doesn't exist");
