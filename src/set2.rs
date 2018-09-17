@@ -131,10 +131,9 @@ fn exercise_4() {
     let mut rng = thread_rng();
     let mut key: [u8; 16] = [0; 16];
     for i in 0..key.len() {
-        key[i] = rng.gen_range(0,255);
+        key[i] = rng.gen_range(97,123);
     }
-
-    // let plain_text: &[u8; 32] = b"This is plaintext for the oracle";
+    println!("key: {:?}", key);
 
     let epilogue = String::from("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg
 aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq
@@ -149,36 +148,56 @@ YnkK");
         }
     }
 
+    let cypher = util::encrypt_ecb(b"This is a test ! It should work".to_vec(), key.to_vec());
+
     // TODO: discover block size and detect it is using ECB
-    let known: &[u8; 15] = b"AAAAAAAAAAAAAAA"; // size 1 less than key
+    let mut discovered = Vec::new();
 
-    let mut dict = Vec::new();
-    for asc in 32..126 {
-        let mut try_ = Vec::new();
-        for k in known {
-            try_.push(*k);
+    for c in 0..16 {
+        let mut known = Vec::new();
+        for _ in 0..(15 - c){
+            known.push(32);  // Fill with spaces
         }
-        try_.push(asc);
 
-        let tmp_cyph = util::encrypt_ecb(try_, key.to_vec());
-        dict.push((asc, tmp_cyph[tmp_cyph.len() - 1]));
-    }
+        let mut dict = Vec::new();
+        for asc in 0..255 {
+            let mut try_: Vec<u8> = Vec::new();
+            for k in &known {
+                try_.push(*k);
+            }
+            for d in &discovered {
+                try_.push(*d);
+            }
+            try_.push(asc);
 
-    let mut joint: Vec<u8> = Vec::new();
-    for c in known {
-        joint.push(*c);
-    }
-    for c in &cypher {
-        joint.push(*c);
-    }
+            let tmp_cyph = util::encrypt_ecb(try_, key.to_vec());
 
-    let test = util::encrypt_ecb(joint, key.to_vec());
+            dict.push((asc, tmp_cyph[15]));
+        }
 
-    for (asc, found_enc) in dict {
-        if test[key.len() - 1] == found_enc {
-            println!("\n{}", asc as char);
+        let mut joint: Vec<u8> = Vec::new();
+        for c in known {
+            joint.push(c);
+        }
+        for c in &cypher {
+            joint.push(*c);
+        }
+
+        let test_enc = util::encrypt_ecb(joint, key.to_vec());
+
+        for (asc, found_enc) in dict {
+            if found_enc == test_enc[15] {
+                discovered.push(asc ^ key[c]);
+            }
         }
     }
+
+    print!("Discovered: ");
+    for d in discovered {
+        print!("{}", d as char);
+    }
+
+    println!();
 }
 
 pub fn run(exercise_num: usize) {
