@@ -51,7 +51,19 @@ fn exercise_3() {
     println!("Single-byte XOR cipher");
 
     let hex_str = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    let _ = util::single_byte_xor(hex_str);
+    let out = util::single_byte_xor(hex_str);
+
+    match out {
+        Ok(txt) => {
+            for c in txt {
+                print!("{}", c as char);
+            }
+            println!();
+        }
+        Err(s) => {
+            println!("{}", s);
+        }
+    }
 }
 
 fn exercise_4() {
@@ -63,8 +75,12 @@ fn exercise_4() {
     for (num, line) in file.lines().enumerate() {
         let l = line.unwrap();
         match util::single_byte_xor(&l) {
-            Ok(_) => {
-                println!("<- {:?}", num);
+            Ok(txt) => {
+                println!("- {:?}", num);
+                for c in txt {
+                    print!("{}", c as char);
+                }
+                println!();
             }
             Err(_) => ()
         }
