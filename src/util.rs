@@ -1,39 +1,60 @@
 use std::io;
 
-pub fn single_byte_xor(line: &str) -> io::Result<()> {
-    let mut ret = false;
-    let dec = hex::decode(line).unwrap();
+fn etaoin_score_char(c: u8) -> Option<u64> {
+    match c {
+        b'e' => Some(5),
+        b'a' | b't' => Some(4),
+        b'h' | b'i' | b'n' | b'o' | b'r' | b's' | b' ' => Some(3),
+        b'b' | b'c' | b'd' | b'f' | b'g' | b'k' | b'l' | b'm' | b'p' | b'u'
+        | b'v' | b'w' | b'y' => Some(2),
+        b'j' | b'q' | b'x' | b'z' => Some(1),
+        x if x < b' ' && x != b'\n' => None,
+        x if x > b'~' => None,
+        _ => Some(0),
+    }
+}
 
-    for x in 32..126{
-        let mut found = true;
-        let mut chars = Vec::new();
-
-        for a in dec.iter() {
-            let tmp_dec = a ^ x;
-            if tmp_dec < 32 || tmp_dec > 126 {  // printable ascii characters
-                found = false;
-                break;
-            }
-
-            chars.push(tmp_dec);
-        }
-
-        if found {
-            ret = true;
-
-            let mut char_vec = Vec::new();
-            for c in chars {
-                // println!("{:?}", c as u8);
-                char_vec.push(c as char);
-            }
-
-            let s: String = char_vec.into_iter().collect();
-
-            println!("{:?}", s);
+pub fn total_etaoin_score(bytes: &[u8]) -> u64 {
+    let mut result = 0;
+    for &b in bytes.iter() {
+        if let Some(score) = etaoin_score_char(b) {
+            result += score;
+        } else {
+            return 0;
         }
     }
 
-    if ret {
+    return result;
+}
+
+pub fn single_byte_xor(line: &str) -> io::Result<()> {
+    let mut cur_score: u64;
+    let mut max_score = 0;
+    let mut max_score_chars = Vec::new();
+    let dec = hex::decode(line).unwrap();
+
+    let mut chars = Vec::new();
+    for x in 32..126{
+        for a in dec.iter() {
+            let tmp_dec = a ^ x;
+            chars.push(tmp_dec);
+        }
+
+        cur_score = total_etaoin_score(&chars);
+        if cur_score > max_score {
+            max_score = cur_score;
+            max_score_chars = chars.clone();
+        }
+
+        chars.clear();
+    }
+
+    if !max_score_chars.is_empty() {
+        for c in &max_score_chars {
+            print!("{}", *c as char);
+        }
+        println!();
+
         return Ok(());
     } else {
         return Err(std::io::Error::new(std::io::ErrorKind::Other, "No valid strings"));
