@@ -27,14 +27,14 @@ pub fn total_etaoin_score(bytes: &[u8]) -> u64 {
     return result;
 }
 
-pub fn single_byte_xor(line: &str) -> io::Result<(Vec<u8>)> {
+pub fn single_byte_xor(line: &str) -> io::Result<((u64, Vec<u8>))> {
     let mut cur_score: u64;
     let mut max_score = 0;
     let mut max_score_chars = Vec::new();
     let dec = hex::decode(line).unwrap();
 
     let mut chars = Vec::new();
-    for x in 32..126{
+    for x in 32..126 {
         for a in dec.iter() {
             let tmp_dec = a ^ x;
             chars.push(tmp_dec);
@@ -50,7 +50,7 @@ pub fn single_byte_xor(line: &str) -> io::Result<(Vec<u8>)> {
     }
 
     if !max_score_chars.is_empty() {
-        return Ok(max_score_chars);
+        return Ok((max_score, max_score_chars));
     } else {
         return Err(std::io::Error::new(std::io::ErrorKind::Other, "No valid strings"));
     }
@@ -61,7 +61,7 @@ pub fn single_byte_xor_u8(block: Vec<u8>) -> io::Result<(u8)> {
     let mut ret: u8 = 0;
     let mut max_seen_letters = 0;
 
-    for x in 30..160{
+    for x in 30..160 {
         let mut found = true;
         let mut chars = Vec::new();
 

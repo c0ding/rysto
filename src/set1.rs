@@ -54,7 +54,7 @@ fn exercise_3() {
     let out = util::single_byte_xor(hex_str);
 
     match out {
-        Ok(txt) => {
+        Ok((_, txt)) => {
             for c in txt {
                 print!("{}", c as char);
             }
@@ -70,20 +70,31 @@ fn exercise_4() {
     println!("Cryptopals: 1.4");
     println!("Detect single-character XOR");
 
+    let mut best_txt: Vec<u8> = Vec::new();
+    let mut best_line_num = 0;
+
     let f = File::open("4.txt").unwrap();
     let file = BufReader::new(&f);
+    let mut max_score = 0;
+
     for (num, line) in file.lines().enumerate() {
         let l = line.unwrap();
         match util::single_byte_xor(&l) {
-            Ok(txt) => {
-                println!("- {:?}", num);
-                for c in txt {
-                    print!("{}", c as char);
+            Ok((score, txt)) => {
+                if score > max_score {
+                    max_score = score;
+
+                    best_txt = txt;
+                    best_line_num = num;
                 }
-                println!();
             }
             Err(_) => ()
         }
+    }
+
+    print!("{}: ", best_line_num);
+    for c in best_txt {
+        print!("{}", c as char);
     }
 }
 
@@ -99,11 +110,19 @@ fn exercise_5() {
 
     let mut ic = 0;
     let van_len = vanilla.len();
+    let mut columns = 0;
     for vc in 0..van_len {
-        print!("{:x?}", (vanilla[vc] as u16) ^ ice[ic]);
+        print!("{:02x?} ", (vanilla[vc] as u16) ^ ice[ic]);
         ic = ic + 1;
         if ic == 3 {
             ic = 0;
+        }
+
+        if columns == 15 {
+            println!();
+            columns = 0;
+        } else {
+            columns = columns + 1;
         }
     }
     println!();
