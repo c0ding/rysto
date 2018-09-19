@@ -305,7 +305,7 @@ fn exercise_7() {
     match result {
         BufferResult::BufferUnderflow => {
             for c in write_buffer.take_read_buffer().take_remaining() {
-                final_result.push(*c as char);
+                final_result.push(*c);
             }
         },
         BufferResult::BufferOverflow => {
@@ -313,8 +313,7 @@ fn exercise_7() {
         }
     }
 
-    let fr: String = final_result.into_iter().collect();
-    println!("{}", fr);
+    println!("{}", String::from_utf8(final_result).unwrap());
 }
 
 fn exercise_8() {
