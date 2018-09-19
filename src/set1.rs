@@ -3,11 +3,8 @@ extern crate base64;
 extern crate ascii;
 extern crate crypto;
 
-use std::io::BufReader;
+use std::io::{BufRead, BufReader};
 use std::fs::File;
-// use std::io::Read;
-use std::io::BufRead;
-
 use ascii::AsciiStr;
 
 use crypto::aes;
