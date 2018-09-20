@@ -366,6 +366,51 @@ fn exercise_8() {
     }
 }
 
+fn exercise_10() {
+    println!("Cryptopals: CBC test");
+    println!("AES in CBC mode");
+
+    let f = File::open("10.txt").unwrap();
+    let file = BufReader::new(&f);
+    let mut content = Vec::new();
+    for line in file.lines() {
+        let hex = base64::decode(&line.unwrap()).unwrap();
+        for i in hex {
+            content.push(i);
+        }
+    }
+    println!("Content has size: {}", content.len());
+
+    let key: &[u8] = b"YELLOW SUBMARINE";
+    let iv = &[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+    let mut decryptor = aes::cbc_decryptor(aes::KeySize::KeySize128,
+                                           key,
+                                           iv,
+                                           crypto::blockmodes::PkcsPadding);
+
+    let mut final_result = Vec::new();
+    let mut buffer = [0; 2880];
+    let mut read_buffer = crypto::buffer::RefReadBuffer::new(&content);
+    let mut write_buffer = crypto::buffer::RefWriteBuffer::new(&mut buffer);
+
+    let result = decryptor.decrypt(&mut read_buffer, &mut write_buffer, true).unwrap();
+    match result {
+        BufferResult::BufferUnderflow => {
+            for c in write_buffer.take_read_buffer().take_remaining() {
+                final_result.push(*c);
+            }
+        },
+        BufferResult::BufferOverflow => {
+            println!("Buffer not big enough");
+        }
+    }
+
+    println!("{}", String::from_utf8(final_result).unwrap());
+}
+
+fn empty() {}
+
 pub fn run(exercise_num: usize) {
     let mut exercises: Vec<&Fn()> = Vec::new();
 
@@ -377,6 +422,8 @@ pub fn run(exercise_num: usize) {
     exercises.push(&exercise_6);
     exercises.push(&exercise_7);
     exercises.push(&exercise_8);
+    exercises.push(&empty);
+    exercises.push(&exercise_10);
 
     if exercise_num > exercises.len() || exercise_num <= 0 {
         println!("Error: exercise number doesn't exist");
